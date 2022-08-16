@@ -1,18 +1,18 @@
-import helpers
+from . import helpers
 
-def frames_to_tc(totalframes, fps=24, df=False):
+def frames_to_tc(totalframes, fps=24, dropframe=False):
     helpers.test_support(fps)
 
     fps = round(fps)
-    totalframes = helpers.remove_df_frames(totalframes, fps) if df else totalframes
+    totalframes = helpers.remove_df_frames(totalframes, fps) if dropframe else totalframes
     hrs, mins, secs, frames = helpers.frames_to_tuple(totalframes, fps)
 
     tcints=[hrs,mins,secs,frames]
     tcstrings = [helpers.prezero(tc) for tc in tcints]
     formattedtc = ":".join(tcstrings)
 
-    if df:
-        helpers.is_valid_df(mins, secs, True)
+    if dropframe:
+        helpers.is_valid_df_frame(mins, secs, True)
         formattedtc = formattedtc[0:8] + ";" + formattedtc[9:]
 
     return formattedtc
@@ -27,6 +27,7 @@ def frames_to_ms(frames, fps=24, hrminsec=False):
     else:
         fps = (round(fps)*1000) / 1001
         framems = 1000/fps
+        
     totalms = frames * framems
     if hrminsec:
         totalsecs = totalms / 1000
@@ -42,11 +43,12 @@ def tc_to_frames(tcstr: str, fps: float):
     helpers.test_support(fps)
 
     if ";" in tcstr:
+        helpers.test_dropframe(fps)
         df = True
     else:
         df = False
 
-    fps = round(fps)
+    fps_round = round(fps)
     clean_tcstr = tcstr.replace(";", ":")
     tcsplit = clean_tcstr.split(":")
 
@@ -54,10 +56,10 @@ def tc_to_frames(tcstr: str, fps: float):
     mins = int(tcsplit[1])
     secs = int(tcsplit[2])
     frames = int(tcsplit[3])
-    totalframes = (hrs * 3600 * fps) + (mins * 60 * fps) + (secs * fps) + frames
+    totalframes = (hrs * 3600 * fps_round) + (mins * 60 * fps_round) + (secs * fps_round) + frames
 
     if df:
-        helpers.is_valid_df(mins, secs, True)
+        helpers.is_valid_df_frame(mins, frames, fps, True)
         return helpers.remove_df_frames(totalframes, fps)
     else:
         return totalframes
@@ -72,7 +74,9 @@ def ms_to_frames(ms, fps=24, hrminsec=False):
     else:
         fps = (round(fps)*1000) / 1001
         framems = 1000/fps
+
     if hrminsec:
         ms = (ms[0]*3600 + ms[1]*60 + ms[2]) * 1000
+
     frames = round(ms/framems)
     return frames
