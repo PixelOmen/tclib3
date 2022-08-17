@@ -1,3 +1,6 @@
+from audioop import mul
+
+
 SUPPORTED_FRAMERATES = [23.98, 23.976, 24, 29.97, 30, 59.94, 60]
 SUPPORTED_DROPFRAME = [29.97, 59.94]
 
@@ -24,27 +27,30 @@ def prezero(num: int) -> str:
         strnum = str(num)
     return strnum
 
-def frames_to_tuple(frames: int, fps: float, valid_fps_only: bool=False) -> tuple[int, int, int, int]:
+def frames_to_tuple(totalframes: int, fps: float, valid_fps_only: bool=False) -> tuple[int, int, int, int]:
     if valid_fps_only:
         test_support(fps)
     fps = round(fps)
-    tcframes = frames % fps
-    totalseconds = int(frames / fps)
+    tcframes = totalframes % fps
+    totalseconds = int(totalframes / fps)
     tchours = int(totalseconds / 3600)
     remaining_secs = totalseconds % 3600
     tcmins = int(remaining_secs / 60)
     tcsecs = int(remaining_secs % 60)
-    tcframes = frames%fps
+    tcframes = totalframes%fps
     return (tchours,tcmins,tcsecs,tcframes)
 
-def remove_df_frames(totalframes: int, fps: float) -> int:
+def adjust_df_frames(totalframes: int, fps: float, add: bool=False) -> int:
     _, multiplier = test_dropframe(fps)
     hrs, mins, secs, frames = frames_to_tuple(totalframes, fps)
     totalmins = (hrs * 60) + mins
     potentialdrops = totalmins * multiplier
     tenthmin_frames = int(totalmins/10) * multiplier
     frames_to_remove = potentialdrops - tenthmin_frames
-    return totalframes - frames_to_remove
+    if add:
+        return totalframes + frames_to_remove
+    else:
+        return totalframes - frames_to_remove
 
 def is_valid_df_frame(mins: int, frames: int, fps: float, self_raise: bool=False) -> bool:
     _, multiplier = test_dropframe(fps)

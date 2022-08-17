@@ -3,7 +3,7 @@ from . import helpers
 def frames_to_tc(totalframes: int, fps: float=24, dropframe: bool=False):
     helpers.test_support(fps)
 
-    totalframes = helpers.remove_df_frames(totalframes, fps) if dropframe else totalframes
+    totalframes = helpers.adjust_df_frames(totalframes, fps, True) if dropframe else totalframes
     hrs, mins, secs, frames = helpers.frames_to_tuple(totalframes, fps)
 
     tcints=[hrs,mins,secs,frames]
@@ -59,7 +59,7 @@ def tc_to_frames(tcstr: str, fps: float):
 
     if df:
         helpers.is_valid_df_frame(mins, frames, fps, True)
-        return helpers.remove_df_frames(totalframes, fps)
+        return helpers.adjust_df_frames(totalframes, fps)
     else:
         return totalframes
 
