@@ -1,9 +1,8 @@
 from . import helpers
 
-def frames_to_tc(totalframes, fps=24, dropframe=False):
+def frames_to_tc(totalframes: int, fps: float=24, dropframe: bool=False):
     helpers.test_support(fps)
 
-    fps = round(fps)
     totalframes = helpers.remove_df_frames(totalframes, fps) if dropframe else totalframes
     hrs, mins, secs, frames = helpers.frames_to_tuple(totalframes, fps)
 
@@ -12,13 +11,13 @@ def frames_to_tc(totalframes, fps=24, dropframe=False):
     formattedtc = ":".join(tcstrings)
 
     if dropframe:
-        helpers.is_valid_df_frame(mins, secs, True)
+        helpers.is_valid_df_frame(mins, secs, fps, True)
         formattedtc = formattedtc[0:8] + ";" + formattedtc[9:]
 
     return formattedtc
 
 
-def frames_to_ms(frames, fps=24, hrminsec=False):
+def frames_to_ms(frames: int, fps: float=24, hrminsec: bool=False):
     helpers.test_support(fps)
 
     fps = float(fps)
@@ -27,7 +26,7 @@ def frames_to_ms(frames, fps=24, hrminsec=False):
     else:
         fps = (round(fps)*1000) / 1001
         framems = 1000/fps
-        
+
     totalms = frames * framems
     if hrminsec:
         totalsecs = totalms / 1000
@@ -80,3 +79,8 @@ def ms_to_frames(ms, fps=24, hrminsec=False):
 
     frames = round(ms/framems)
     return frames
+
+def duration(start_tc: str, end_tc: str, fps: float, dropframe: bool=False) -> str:
+    start_frames = tc_to_frames(start_tc, fps)
+    end_frames = tc_to_frames(end_tc, fps)
+    return frames_to_tc(end_frames-start_frames, fps, dropframe)
