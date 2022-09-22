@@ -11,7 +11,7 @@ def frames_to_tc(totalframes: int, fps: float=24, dropframe: bool=False):
     formattedtc = ":".join(tcstrings)
 
     if dropframe:
-        helpers.is_valid_df_frame(mins, secs, fps, True)
+        helpers.is_valid_df_frame(mins, secs, frames, fps, True)
         formattedtc = formattedtc[0:8] + ";" + formattedtc[9:]
 
     return formattedtc
@@ -58,7 +58,7 @@ def tc_to_frames(tcstr: str, fps: float):
     totalframes = (hrs * 3600 * fps_round) + (mins * 60 * fps_round) + (secs * fps_round) + frames
 
     if df:
-        helpers.is_valid_df_frame(mins, frames, fps, True)
+        helpers.is_valid_df_frame(mins, secs, frames, fps, True)
         return helpers.adjust_df_frames(totalframes, fps)
     else:
         return totalframes

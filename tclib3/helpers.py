@@ -52,9 +52,9 @@ def adjust_df_frames(totalframes: int, fps: float, add: bool=False) -> int:
     else:
         return totalframes - frames_to_remove
 
-def is_valid_df_frame(mins: int, frames: int, fps: float, self_raise: bool=False) -> bool:
+def is_valid_df_frame(mins: int, secs: int, frames: int, fps: float, self_raise: bool=False) -> bool:
     _, multiplier = test_dropframe(fps)
-    isvalid = not (frames < multiplier and mins % 10 != 0)
+    isvalid = not (frames < multiplier and secs == 0 and mins % 10 != 0)
     if not isvalid and self_raise:
         raise ValueError(f"Invalid frame number in DFTC: Mins={mins} Frame={frames}")
     return isvalid
