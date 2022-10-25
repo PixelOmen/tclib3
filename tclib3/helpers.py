@@ -1,6 +1,3 @@
-from audioop import mul
-
-
 SUPPORTED_FRAMERATES = [23.98, 23.976, 24, 25, 29.97, 30, 59.94, 60]
 SUPPORTED_DROPFRAME = [29.97, 59.94]
 
