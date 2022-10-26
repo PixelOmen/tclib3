@@ -1,3 +1,6 @@
+from audioop import mul
+
+
 SUPPORTED_FRAMERATES = [23.98, 23.976, 24, 25, 29.97, 30, 59.94, 60]
 SUPPORTED_DROPFRAME = [29.97, 59.94]
 
@@ -24,24 +27,45 @@ def prezero(num: int) -> str:
         strnum = str(num)
     return strnum
 
-def frames_to_tuple(totalframes: int, fps: float, valid_fps_only: bool=False) -> tuple[int, int, int, int]:
+def frames_to_tuple(totalframes: int, fps: float, dropframe: bool=False, valid_fps_only: bool=False) -> tuple[int, int, int, int]:
     if valid_fps_only:
         test_support(fps)
-    fps = round(fps)
-    tcframes = totalframes % fps
-    totalseconds = int(totalframes / fps)
-    tchours = int(totalseconds / 3600)
-    remaining_secs = totalseconds % 3600
-    tcmins = int(remaining_secs / 60)
-    tcsecs = int(remaining_secs % 60)
-    tcframes = totalframes%fps
-    return (tchours,tcmins,tcsecs,tcframes)
+    if dropframe:
+        _, multiplier = test_dropframe(fps)
+        fps = round(fps)
+        remaining_frames = totalframes
+        totalmins = 0
+        while True:
+            if totalmins % 10 == 0:
+                to_subtract = (fps * 60)
+            else:
+                to_subtract = (fps * 60) - multiplier
+            remaining_frames -= to_subtract
+            if remaining_frames < 0:
+                remaining_frames += to_subtract
+                break
+            totalmins += 1
+        tchours = int(totalmins / 60)
+        tcmins = totalmins % 60
+        tcsecs = int(remaining_frames / fps)
+        tcframes = (remaining_frames % fps) + multiplier
+        return (tchours,tcmins,tcsecs,tcframes)
+    else:
+        fps = round(fps)
+        tcframes = totalframes % fps
+        totalseconds = int(totalframes / fps)
+        tchours = int(totalseconds / 3600)
+        remaining_secs = totalseconds % 3600
+        tcmins = int(remaining_secs / 60)
+        tcsecs = int(remaining_secs % 60)
+        tcframes = totalframes%fps
+        return (tchours,tcmins,tcsecs,tcframes)
 
 def adjust_df_frames(totalframes: int, fps: float, add: bool=False) -> int:
     _, multiplier = test_dropframe(fps)
-    hrs, mins, secs, frames = frames_to_tuple(totalframes, fps)
+    hrs, mins, _, _ = frames_to_tuple(totalframes, fps, dropframe=True)
     totalmins = (hrs * 60) + mins
-    potentialdrops = totalmins * multiplier
+    potentialdrops = (totalmins) * multiplier
     tenthmin_frames = int(totalmins/10) * multiplier
     frames_to_remove = potentialdrops - tenthmin_frames
     if add:
