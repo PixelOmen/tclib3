@@ -1,3 +1,4 @@
+from audioop import mul
 from . import helpers
 
 def frames_to_tc(totalframes: int, fps: float=24, dropframe: bool=False):
@@ -47,7 +48,6 @@ def tc_to_frames(tcstr: str, fps: float):
     else:
         df = False
 
-    fps_round = round(fps)
     clean_tcstr = tcstr.replace(";", ":")
     tcsplit = clean_tcstr.split(":")
 
@@ -55,13 +55,20 @@ def tc_to_frames(tcstr: str, fps: float):
     mins = int(tcsplit[1])
     secs = int(tcsplit[2])
     frames = int(tcsplit[3])
-    totalframes = (hrs * 3600 * fps_round) + (mins * 60 * fps_round) + (secs * fps_round) + frames
 
+    fps_round = round(fps)
     if df:
         helpers.is_valid_df_frame(mins, secs, frames, fps, True)
-        return helpers.adjust_df_frames(totalframes, fps)
-    else:
+        _, multiplier = helpers.test_dropframe(fps)
+        totalmins = (hrs * 60) + mins
+        non_dropped_frames = int(int(totalmins) / 10) * multiplier
+        dropped_Frames = totalmins * multiplier
+        total_dropped = dropped_Frames - non_dropped_frames
+        total_ndf = (hrs * 3600 * fps_round) + (mins * 60 * fps_round) + (secs * fps_round) + frames
+        totalframes = total_ndf - total_dropped
         return totalframes
+    else:
+        return (hrs * 3600 * fps_round) + (mins * 60 * fps_round) + (secs * fps_round) + frames
 
 
 def ms_to_frames(ms, fps=24, hrminsec=False):

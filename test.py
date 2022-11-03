@@ -7,7 +7,7 @@ test2 = "00:16:00;29"
 
 # frames = tclib3.tc_to_frames(test, 29.97)
 
-tcstring = tclib3.frames_to_tc(3598, 29.97, True)
+tcstring = tclib3.frames_to_tc(1799, 29.97, True)
 print(tcstring)
 
 # 15 = 27001
