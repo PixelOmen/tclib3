@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 HERE = Path(__file__).parent
-ROOT = HERE.parent
+ROOT = HERE.parent.parent
 if ROOT not in sys.path:
     sys.path.append(str(ROOT))
 
@@ -55,3 +55,6 @@ class Testtclib(unittest.TestCase):
             tc_split = [tclib3.prezero(hrs), tclib3.prezero(mins), tclib3.prezero(secs), tclib3.prezero(frames)]
             if hrs >= 2 and mins >= 59:
                 break
+
+if __name__ == "__main__":
+    unittest.main()
