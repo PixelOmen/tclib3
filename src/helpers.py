@@ -28,7 +28,6 @@ def frames_to_tuple(totalframes: int, fps: float, valid_fps_only: bool=False) ->
     if valid_fps_only:
         test_support(fps)
     fps = round(fps)
-    tcframes = totalframes % fps
     totalseconds = int(totalframes / fps)
     tchours = int(totalseconds / 3600)
     remaining_secs = totalseconds % 3600
