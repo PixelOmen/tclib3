@@ -1,6 +1,9 @@
+from typing import overload, Literal
+
 from . import helpers
 
-def frames_to_tc(totalframes: int, fps: float=24, dropframe: bool=False):
+def frames_to_tc(totalframes: int, fps: float=24, dropframe: bool=False) -> str:
+    """Convert frames to timecode"""
     helpers.test_support(fps)
 
     totalframes = helpers.adjust_df_frames(totalframes, fps, True) if dropframe else totalframes
@@ -16,8 +19,15 @@ def frames_to_tc(totalframes: int, fps: float=24, dropframe: bool=False):
 
     return formattedtc
 
-
+@overload
+def frames_to_ms(frames: int, fps: float=24, hrminsec: Literal[False]=False) -> float:...
+@overload
+def frames_to_ms(frames: int, fps: float=24, hrminsec: Literal[True]=True) -> tuple[int, int, float]:...
 def frames_to_ms(frames: int, fps: float=24, hrminsec: bool=False):
+    """
+    Convert frames to milliseconds.
+    If hrminsec is True, returns a tuple of (int, int, float), (hours, minutes, seconds)
+    """
     helpers.test_support(fps)
 
     fps = float(fps)
@@ -34,11 +44,11 @@ def frames_to_ms(frames: int, fps: float=24, hrminsec: bool=False):
         remaining_secs = totalsecs % 3600
         mins = int(remaining_secs / 60)
         secs = round(remaining_secs % 60, 4)
-        return [hrs, mins, secs]
+        return (hrs, mins, secs)
     return totalms
 
-
-def tc_to_frames(tcstr: str, fps: float):
+def tc_to_frames(tcstr: str, fps: float) -> int:
+    """Convert timecode string to frames"""
     helpers.test_support(fps)
 
     if ";" in tcstr:
@@ -69,8 +79,11 @@ def tc_to_frames(tcstr: str, fps: float):
     else:
         return (hrs * 3600 * fps_round) + (mins * 60 * fps_round) + (secs * fps_round) + frames
 
-
-def ms_to_frames(ms, fps=24, hrminsec=False):
+def ms_to_frames(ms: float | tuple[int, int, float], fps=24, hrminsec=False) -> int:
+    """
+    Convert milliseconds to frames.
+    If `hrminsec` is True, `ms` must be a tuple of (hours, minutes, seconds) (int, int, float)
+    """
     helpers.test_support(fps)
 
     fps = float(fps)
@@ -81,12 +94,19 @@ def ms_to_frames(ms, fps=24, hrminsec=False):
         framems = 1000/fps
 
     if hrminsec:
-        ms = (ms[0]*3600 + ms[1]*60 + ms[2]) * 1000
+        if not isinstance(ms, tuple):
+            raise ValueError("ms must be a tuple of (hours, minutes, seconds) if hrminsec is True")
+        final_ms = (ms[0]*3600 + ms[1]*60 + ms[2]) * 1000
+    else:
+        if not isinstance(ms, (int, float)):
+            raise ValueError("ms must be an int or float if hrminsec is False")
+        final_ms = ms
 
-    frames = round(ms/framems)
+    frames = round(final_ms/framems)
     return frames
 
 def duration(start_tc: str, end_tc: str, fps: float, dropframe: bool=False) -> str:
+    """Get the duration between two timecodes"""
     start_frames = tc_to_frames(start_tc, fps)
     end_frames = tc_to_frames(end_tc, fps)
     return frames_to_tc(end_frames-start_frames, fps, dropframe)

@@ -3,11 +3,11 @@ import unittest
 from pathlib import Path
 
 HERE = Path(__file__).parent
-ROOT = HERE.parent.parent
+ROOT = HERE.parent
 if ROOT not in sys.path:
     sys.path.append(str(ROOT))
 
-import tclib3
+import src as tclib3
 
 RANDOM_TCS = [
     ("00:02:59;26", 5392), ("00:02:59;29", 5395), ("00:02:59;28", 5394),
