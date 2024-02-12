@@ -9,15 +9,21 @@ if ROOT not in sys.path:
 
 import src as tclib3
 
-RANDOM_TCS = [
+RANDOM_DF_TCS = [
     ("00:02:59;26", 5392), ("00:02:59;29", 5395), ("00:02:59;28", 5394),
     ("00:02:00;04", 3600), ("00:03:00;04", 5398), ("00:10:00;00", 17982),
-    ("00:20:00;00", 35964), ("00:09:59;28", 17980)
+    ("00:10:00;01", 17983), ("00:10:00;02", 17984), ("00:10:00;03", 17985),
+    ("00:20:00;00", 35964), ("00:20:00;01", 35965), ("00:09:59;28", 17980)
 ]
 
 class Testtclib(unittest.TestCase):
-    def test_df_random_tc_frame_tc(self):
-        for tc_str, frame in RANDOM_TCS:
+    def test_frames_to_tc(self):
+        for tc_str, frame in RANDOM_DF_TCS:
+            converted_frame = tclib3.frames_to_tc(frame, 29.97, True)
+            self.assertEqual(converted_frame, tc_str)
+
+    def test_tc_to_frames(self):
+        for tc_str, frame in RANDOM_DF_TCS:
             converted_frame = tclib3.tc_to_frames(tc_str, 29.97)
             self.assertEqual(converted_frame, frame)
 

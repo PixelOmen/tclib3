@@ -1,3 +1,5 @@
+from typing import overload, Literal
+
 SUPPORTED_FRAMERATES = [23.98, 23.976, 24, 25, 29.97, 30, 59.94, 60]
 SUPPORTED_DROPFRAME = [29.97, 59.94]
 
@@ -36,18 +38,33 @@ def frames_to_tuple(totalframes: int, fps: float, valid_fps_only: bool=False) ->
     tcframes = totalframes%fps
     return (tchours,tcmins,tcsecs,tcframes)
 
-def adjust_df_frames(totalframes: int, fps: float, add: bool=False) -> int:
+def adjust_df_frames(totalframes: int, fps: float, df_input: bool=False) -> int:
     _, multiplier = test_dropframe(fps)
-    fps = round(fps)
 
-    tenthmin_frames = (((fps * 60) - multiplier) * 10) + multiplier
-    tenthmins = int(totalframes / tenthmin_frames)
-    dropped_mins = int(totalframes / (tenthmin_frames / 10)) - tenthmins
-    dropped_frames = (dropped_mins * multiplier)
+    if df_input:
 
-    if add:
-        totalframes += dropped_frames
+        round_fps = round(fps)
+        frames_in_droppedmin = (round_fps * 60) - multiplier
+        prev_min = 0
+        dropped_min = 0
+        currentframes = totalframes
+        while currentframes >= frames_in_droppedmin + multiplier:
+
+            if (prev_min + 1) % 10 == 0:
+                currentframes -= frames_in_droppedmin + multiplier
+            else:
+                currentframes -= frames_in_droppedmin
+                dropped_min += 1
+
+            prev_min += 1
+
+        totalframes += dropped_min * multiplier
+
     else:
+        whole_seconds = totalframes // fps
+        minutes = whole_seconds // 60
+        tenth_min_blocks = minutes // 10
+        dropped_frames = int((minutes * multiplier) - (tenth_min_blocks * multiplier))
         totalframes -= dropped_frames
 
     return totalframes

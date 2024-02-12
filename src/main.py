@@ -109,4 +109,6 @@ def duration(start_tc: str, end_tc: str, fps: float, dropframe: bool=False) -> s
     """Get the duration between two timecodes"""
     start_frames = tc_to_frames(start_tc, fps)
     end_frames = tc_to_frames(end_tc, fps)
+    if end_frames < start_frames:
+        raise ValueError("End timecode cannot be less than start timecode: {start_tc} > {end_tc}")
     return frames_to_tc(end_frames-start_frames, fps, dropframe)
