@@ -9,6 +9,8 @@ if ROOT not in sys.path:
 
 import src as tclib3
 
+# Random TCs are 29.97fps
+
 RANDOM_DF_TCS = [
     ("00:02:59;26", 5392), ("00:02:59;29", 5395), ("00:02:59;28", 5394),
     ("00:02:00;04", 3600), ("00:03:00;04", 5398), ("00:10:00;00", 17982),
@@ -16,10 +18,17 @@ RANDOM_DF_TCS = [
     ("00:20:00;00", 35964), ("00:20:00;01", 35965), ("00:09:59;28", 17980)
 ]
 
+RANDOM_NDF_TCS = [
+    ("00:02:59:26", 5392), ("00:02:59:29", 5395), ("00:02:59:28", 5394),
+    ("00:02:00:04", 3600), ("00:03:00:04", 5398), ("00:10:00:00", 17982),
+    ("00:10:00:01", 17983), ("00:10:00:02", 17984), ("00:10:00:03", 17985),
+    ("00:20:00:00", 35964), ("00:20:00:01", 35965), ("00:09:59:28", 17980)
+]
+
 class Testtclib(unittest.TestCase):
     def test_frames_to_tc(self):
         for tc_str, frame in RANDOM_DF_TCS:
-            converted_frame = tclib3.frames_to_tc(frame, 29.97, True)
+            converted_frame = tclib3.frames_to_tc(frame, 29.97, True, True)
             self.assertEqual(converted_frame, tc_str)
 
     def test_tc_to_frames(self):
@@ -41,7 +50,7 @@ class Testtclib(unittest.TestCase):
                 tc_str = ":".join(tc_split)
                 tc_str = tc_str[:8] + ";" + tc_str[9:]
                 test_frames = tclib3.tc_to_frames(tc_str, 29.97)
-                test_string = tclib3.frames_to_tc(test_frames, 29.97, True)
+                test_string = tclib3.frames_to_tc(test_frames, 29.97, True, True)
                 reverted_frames = tclib3.tc_to_frames(test_string, 29.97)
                 self.assertEqual(test_frames, reverted_frames)
             except ValueError as e:
@@ -58,7 +67,7 @@ class Testtclib(unittest.TestCase):
             if mins >= 60:
                 mins = 0
                 hrs += 1
-            tc_split = [tclib3.prezero(hrs), tclib3.prezero(mins), tclib3.prezero(secs), tclib3.prezero(frames)]
+            tc_split = [f"{hrs:02}", f"{mins:02}", f"{secs:02}", f"{frames:02}"]
             if hrs >= 2 and mins >= 59:
                 break
 
