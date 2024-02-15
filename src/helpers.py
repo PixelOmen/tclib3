@@ -68,8 +68,7 @@ def adjust_df_frames(totalframes: int, fps: float, df_input: bool=False) -> int:
     """
     Adjust frames for dropframe timecode.
     if df_input is False, it subtracts the dropped frames from the totalframes.
-    If df_input is True, the input frames are assumed to have already been dropped
-    and it adds the dropped frames back to the totalframes.
+    If df_input is True, it adds the dropped frames back to the totalframes.
     """
     _, multiplier = test_dropframe(fps)
 

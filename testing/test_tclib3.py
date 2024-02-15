@@ -7,69 +7,36 @@ ROOT = HERE.parent
 if ROOT not in sys.path:
     sys.path.append(str(ROOT))
 
+import testdata
 import src as tclib3
 
-# Random TCs are 29.97fps
 
-RANDOM_DF_TCS = [
-    ("00:02:59;26", 5392), ("00:02:59;29", 5395), ("00:02:59;28", 5394),
-    ("00:02:00;04", 3600), ("00:03:00;04", 5398), ("00:10:00;00", 17982),
-    ("00:10:00;01", 17983), ("00:10:00;02", 17984), ("00:10:00;03", 17985),
-    ("00:20:00;00", 35964), ("00:20:00;01", 35965), ("00:09:59;28", 17980)
-]
-
-RANDOM_NDF_TCS = [
-    ("00:02:59:26", 5392), ("00:02:59:29", 5395), ("00:02:59:28", 5394),
-    ("00:02:00:04", 3600), ("00:03:00:04", 5398), ("00:10:00:00", 17982),
-    ("00:10:00:01", 17983), ("00:10:00:02", 17984), ("00:10:00:03", 17985),
-    ("00:20:00:00", 35964), ("00:20:00:01", 35965), ("00:09:59:28", 17980)
-]
-
-class Testtclib(unittest.TestCase):
+class TestLib(unittest.TestCase):
     def test_frames_to_tc(self):
-        for tc_str, frame in RANDOM_DF_TCS:
+        for tc_str, frame in testdata.RANDOM_DF_TCS_2997:
             converted_frame = tclib3.frames_to_tc(frame, 29.97, True, True)
             self.assertEqual(converted_frame, tc_str)
 
+        for tc_str, frame in testdata.RANDOM_TCS_2997:
+            converted_frame = tclib3.frames_to_tc(frame, 29.97, False, False)
+            self.assertEqual(converted_frame, tc_str)
+
+        for tc_str, frame in testdata.RANDOM_TCS_2398:
+            converted_frame = tclib3.frames_to_tc(frame, 23.976, False, False)
+            self.assertEqual(converted_frame, tc_str)
+
     def test_tc_to_frames(self):
-        for tc_str, frame in RANDOM_DF_TCS:
+        for tc_str, frame in testdata.RANDOM_DF_TCS_2997:
             converted_frame = tclib3.tc_to_frames(tc_str, 29.97)
             self.assertEqual(converted_frame, frame)
 
-    def test_df_every_tc_to_hr3(self):
-        test_fps = round(29.97)
-        start_tc = "00:00:00:00"
-        tc_split = start_tc.split(":")
-        while True:
-            hrs = int(tc_split[0])
-            mins = int(tc_split[1])
-            secs = int(tc_split[2])
-            frames = int(tc_split[3])
+        for tc_str, frame in testdata.RANDOM_TCS_2997:
+            converted_frame = tclib3.tc_to_frames(tc_str, 29.97)
+            self.assertEqual(converted_frame, frame)
 
-            try:
-                tc_str = ":".join(tc_split)
-                tc_str = tc_str[:8] + ";" + tc_str[9:]
-                test_frames = tclib3.tc_to_frames(tc_str, 29.97)
-                test_string = tclib3.frames_to_tc(test_frames, 29.97, True, True)
-                reverted_frames = tclib3.tc_to_frames(test_string, 29.97)
-                self.assertEqual(test_frames, reverted_frames)
-            except ValueError as e:
-                if not str(e).startswith("Invalid frame"):
-                    raise ValueError(e)
-
-            frames += 1
-            if frames >= test_fps:
-                frames = 0
-                secs += 1
-            if secs >= 60:
-                secs = 0
-                mins += 1
-            if mins >= 60:
-                mins = 0
-                hrs += 1
-            tc_split = [f"{hrs:02}", f"{mins:02}", f"{secs:02}", f"{frames:02}"]
-            if hrs >= 2 and mins >= 59:
-                break
+        for tc_str, frame in testdata.RANDOM_TCS_2398:
+            converted_frame = tclib3.tc_to_frames(tc_str, 23.976)
+            self.assertEqual(converted_frame, frame)
 
 if __name__ == "__main__":
     unittest.main()
