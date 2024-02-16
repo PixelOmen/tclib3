@@ -1,14 +1,14 @@
 from . import helpers
 
-def frames_to_tc(inputframes: int, fps: float=24, df_output: bool=False) -> str:
+def frames_to_tc(inputframes: int, fps: float=24, dropframe: bool=False) -> str:
     """
     Convert frames to timecode.
-    If `df_output` is True, the timecode string will be dropframe.
-    If `df_input` is True, the input frames are assumed to be dropframe.
+    If `dropframe` is True, the inputframes are assumed to be derived from 
+    dropframe timecode and the output timecode will also be dropframe.
     """
     helpers.test_support(fps)
 
-    if df_output:
+    if dropframe:
         totalframes = helpers.adjust_df_frames(inputframes, fps, True)
     else:
         totalframes = inputframes
@@ -18,7 +18,7 @@ def frames_to_tc(inputframes: int, fps: float=24, df_output: bool=False) -> str:
     tcstrings = [f"{tc:02}" for tc in tcints]
     formattedtc = ":".join(tcstrings)
 
-    if df_output:
+    if dropframe:
         helpers.is_valid_df_frame(mins, secs, frames, fps, True)
         formattedtc = formattedtc[0:8] + ";" + formattedtc[9:]
 
@@ -27,8 +27,10 @@ def frames_to_tc(inputframes: int, fps: float=24, df_output: bool=False) -> str:
 def tc_to_frames(tcstr: str, fps: float, df_by_delim: bool=True, force_df: bool=False) -> int:
     """
     Convert timecode string to frames.
+
     If `df_by_delim` is True, the timecode string is assumed to be
     dropframe if it contains a semicolon.
+
     If `force_df` is True, the timecode string is assumed to always be dropframe.
     """
     helpers.test_support(fps)
@@ -59,7 +61,6 @@ def tc_to_frames(tcstr: str, fps: float, df_by_delim: bool=True, force_df: bool=
 def frames_to_ms(frames: int, fps: float) -> float:
     """
     Convert frames to milliseconds.
-    If hrminsec is True, returns a tuple of (int, int, float), (hours, minutes, seconds)
     """
     helpers.test_support(fps)
 
@@ -74,7 +75,6 @@ def frames_to_ms(frames: int, fps: float) -> float:
 def ms_to_frames(ms: float, fps: float) -> int:
     """
     Convert milliseconds to frames.
-    If hrminsec is True, ms must be a tuple of (hours, minutes, seconds) (int, int, float)
     """
     helpers.test_support(fps)
 
