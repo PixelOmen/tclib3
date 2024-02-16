@@ -5,7 +5,7 @@ def test_support(fps: float) -> None:
     if fps not in SUPPORTED_FRAMERATES:
         raise ValueError(f"{fps} - Framerate not supported. Framerates supported = {SUPPORTED_FRAMERATES}")
     
-def test_dropframe(fps: float, self_raise: bool=True) -> tuple[bool, int]:
+def test_dropframe_support(fps: float, self_raise: bool=True) -> tuple[bool, int]:
     """
     Test if the framerate is dropframe and return the dropframe multiplier.
     If `self_raise` is True, it raises a ValueError if the fps is not supported.
@@ -25,11 +25,22 @@ def test_dropframe(fps: float, self_raise: bool=True) -> tuple[bool, int]:
     
 def is_valid_df_frame(mins: int, secs: int, frames: int, fps: float, self_raise: bool=False) -> bool:
     """ Check if the frame number is valid in dropframe timecode """
-    _, multiplier = test_dropframe(fps)
+    _, multiplier = test_dropframe_support(fps)
     isvalid = not (frames < multiplier and secs == 0 and mins % 10 != 0)
     if not isvalid and self_raise:
         raise ValueError(f"Invalid frame number in DFTC: Mins={mins} Frame={frames}")
     return isvalid
+
+def is_valid_tc_frame(tcstr: str, fps: float, df: bool=False, self_raise: bool=False) -> bool:
+    """ Check if the timecode string is valid """
+    _, mins, secs, frames = tc_to_tuple(tcstr)
+    if frames >= fps:
+        if self_raise:
+            raise ValueError(f"Frame number higher than or equal to fps: {tcstr}")
+        return False
+    if df or ";" in tcstr:
+        return is_valid_df_frame(mins, secs, frames, fps, self_raise)
+    return True
 
 def adjust_df_frames(totalframes: int, fps: float, input_df_aligned: bool=True) -> int:
     """
@@ -42,7 +53,7 @@ def adjust_df_frames(totalframes: int, fps: float, input_df_aligned: bool=True) 
     `input_df_aligned` = False assumes the input frames were derived from a DF timecode using
     a NDF conversion and adjusts to the actual DF frame count.
     """
-    _, multiplier = test_dropframe(fps)
+    _, multiplier = test_dropframe_support(fps)
 
     if input_df_aligned:
         round_fps = round(fps)
@@ -83,3 +94,15 @@ def frames_to_tuple(totalframes: int, fps: float, valid_fps_only: bool=False) ->
     tcsecs = int(remaining_secs % 60)
     tcframes = totalframes%fps
     return (tchours,tcmins,tcsecs,tcframes)
+
+def tc_to_tuple(tcstr: str) -> tuple[int, int, int, int]:
+    """
+    Convert timecode string to timecode tuple (hours, minutes, seconds, frames).
+    """
+    clean_tcstr = tcstr.replace(";", ":")
+    tcsplit = clean_tcstr.split(":")
+    hrs = int(tcsplit[0])
+    mins = int(tcsplit[1])
+    secs = int(tcsplit[2])
+    frames = int(tcsplit[3])
+    return (hrs, mins, secs, frames)

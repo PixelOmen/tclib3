@@ -40,20 +40,16 @@ def tc_to_frames(tcstr: str, fps: float, df_by_delim: bool=True, force_df: bool=
     else:
         df = False
 
-    clean_tcstr = tcstr.replace(";", ":")
-    tcsplit = clean_tcstr.split(":")
+    if df:
+        helpers.test_dropframe_support(fps)
+    helpers.is_valid_tc_frame(tcstr, fps, df, True)
 
-    hrs = int(tcsplit[0])
-    mins = int(tcsplit[1])
-    secs = int(tcsplit[2])
-    frames = int(tcsplit[3])
+    hrs, mins, secs, frames = helpers.tc_to_tuple(tcstr)
 
     fps_round = round(fps)
     ndf_frames = (hrs * 3600 * fps_round) + (mins * 60 * fps_round) + (secs * fps_round) + frames
 
     if df:
-        helpers.test_dropframe(fps)
-        helpers.is_valid_df_frame(mins, secs, frames, fps, True)
         return helpers.adjust_df_frames(ndf_frames, fps, input_df_aligned=False)
     else:
         return ndf_frames
