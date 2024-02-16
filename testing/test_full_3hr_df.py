@@ -25,7 +25,7 @@ class Test3HourDF(unittest.TestCase):
                 tc_str = ":".join(tc_split)
                 tc_str = tc_str[:8] + ";" + tc_str[9:]
                 test_frames = tclib3.tc_to_frames(tc_str, 29.97)
-                test_string = tclib3.frames_to_tc(test_frames, 29.97, True, True)
+                test_string = tclib3.frames_to_tc(test_frames, 29.97, True)
                 reverted_frames = tclib3.tc_to_frames(test_string, 29.97)
                 self.assertEqual(test_frames, reverted_frames)
             except ValueError as e:

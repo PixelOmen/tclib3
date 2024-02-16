@@ -1,15 +1,17 @@
 from . import helpers
-from .helpers import frames_to_ms, ms_to_frames # to simplify export at package level
 
-def frames_to_tc(inputframes: int, fps: float=24,
-                 df_output: bool=False, df_input: bool=False) -> str:
-    """Convert frames to timecode"""
+def frames_to_tc(inputframes: int, fps: float=24, df_output: bool=False) -> str:
+    """
+    Convert frames to timecode.
+    If `df_output` is True, the timecode string will be dropframe.
+    If `df_input` is True, the input frames are assumed to be dropframe.
+    """
     helpers.test_support(fps)
 
-    if (not df_output and not df_input) or (df_output and not df_input):
-        totalframes = inputframes
+    if df_output:
+        totalframes = helpers.adjust_df_frames(inputframes, fps, True)
     else:
-        totalframes = helpers.adjust_df_frames(inputframes, fps, df_input)
+        totalframes = inputframes
     hrs, mins, secs, frames = helpers.frames_to_tuple(totalframes, fps)
 
     tcints=[hrs,mins,secs,frames]
@@ -50,9 +52,39 @@ def tc_to_frames(tcstr: str, fps: float, df_by_delim: bool=True, force_df: bool=
     if df:
         helpers.test_dropframe(fps)
         helpers.is_valid_df_frame(mins, secs, frames, fps, True)
-        return helpers.adjust_df_frames(ndf_frames, fps, df_input=False)
+        return helpers.adjust_df_frames(ndf_frames, fps, input_df_aligned=False)
     else:
         return ndf_frames
+
+def frames_to_ms(frames: int, fps: float) -> float:
+    """
+    Convert frames to milliseconds.
+    If hrminsec is True, returns a tuple of (int, int, float), (hours, minutes, seconds)
+    """
+    helpers.test_support(fps)
+
+    if isinstance(fps, int) or fps.is_integer():
+        framems = 1000/fps
+    else:
+        fps = (round(fps)*1000) / 1001
+        framems = 1000/fps
+
+    return frames * framems
+
+def ms_to_frames(ms: float, fps: float) -> int:
+    """
+    Convert milliseconds to frames.
+    If hrminsec is True, ms must be a tuple of (hours, minutes, seconds) (int, int, float)
+    """
+    helpers.test_support(fps)
+
+    if isinstance(fps, int) or fps.is_integer():
+        framems = 1000/fps
+    else:
+        fps = (round(fps)*1000) / 1001
+        framems = 1000/fps
+
+    return round(ms/framems)
 
 def duration(start_tc: str, end_tc: str, fps: float, dropframe: bool=False) -> str:
     """Get the duration between two timecodes"""

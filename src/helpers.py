@@ -5,37 +5,13 @@ def test_support(fps: float) -> None:
     if fps not in SUPPORTED_FRAMERATES:
         raise ValueError(f"{fps} - Framerate not supported. Framerates supported = {SUPPORTED_FRAMERATES}")
     
-def frames_to_ms(frames: int, fps: float) -> float:
-    """
-    Convert frames to milliseconds.
-    If hrminsec is True, returns a tuple of (int, int, float), (hours, minutes, seconds)
-    """
-    test_support(fps)
-
-    if isinstance(fps, int) or fps.is_integer():
-        framems = 1000/fps
-    else:
-        fps = (round(fps)*1000) / 1001
-        framems = 1000/fps
-
-    return frames * framems
-
-def ms_to_frames(ms: float, fps: float) -> int:
-    """
-    Convert milliseconds to frames.
-    If hrminsec is True, ms must be a tuple of (hours, minutes, seconds) (int, int, float)
-    """
-    test_support(fps)
-
-    if isinstance(fps, int) or fps.is_integer():
-        framems = 1000/fps
-    else:
-        fps = (round(fps)*1000) / 1001
-        framems = 1000/fps
-
-    return round(ms/framems)
-
 def test_dropframe(fps: float, self_raise: bool=True) -> tuple[bool, int]:
+    """
+    Test if the framerate is dropframe and return the dropframe multiplier.
+    If `self_raise` is True, it raises a ValueError if the fps is not supported.
+    Returns a tuple (bool, int) where the bool is True if the framerate is dropframe
+    and the int is the dropframe multiplier.
+    """
     if fps == 29.97:
         drop_multiplier = 2
     elif fps == 59.94:
@@ -46,33 +22,29 @@ def test_dropframe(fps: float, self_raise: bool=True) -> tuple[bool, int]:
         else:
             return (False, 0)
     return (True, drop_multiplier)
+    
+def is_valid_df_frame(mins: int, secs: int, frames: int, fps: float, self_raise: bool=False) -> bool:
+    """ Check if the frame number is valid in dropframe timecode """
+    _, multiplier = test_dropframe(fps)
+    isvalid = not (frames < multiplier and secs == 0 and mins % 10 != 0)
+    if not isvalid and self_raise:
+        raise ValueError(f"Invalid frame number in DFTC: Mins={mins} Frame={frames}")
+    return isvalid
 
-def frames_to_tuple(totalframes: int, fps: float, valid_fps_only: bool=False) -> tuple[int, int, int, int]:
+def adjust_df_frames(totalframes: int, fps: float, input_df_aligned: bool=True) -> int:
     """
-    Convert frames to timecode tuple (hours, minutes, seconds, frames).
-    If valid_fps_only is True, it raises a ValueError if the fps is not supported.
-    If original frames were dropframe, frames are assumed to have already been adjusted.
-    """
-    if valid_fps_only:
-        test_support(fps)
-    fps = round(fps)
-    totalseconds = int(totalframes / fps)
-    tchours = int(totalseconds / 3600)
-    remaining_secs = totalseconds % 3600
-    tcmins = int(remaining_secs / 60)
-    tcsecs = int(remaining_secs % 60)
-    tcframes = totalframes%fps
-    return (tchours,tcmins,tcsecs,tcframes)
+    Adjusts the frame count for compatibility between dropframe and non-dropframe calculations.
+    
+    `input_df_aligned` = True assumes the input frames are already DF aligned and adjusts to the
+    equivalent frame count needed so that a conversion to DF timecode using NDF formulas will be
+    accurate to the original frame count.
 
-def adjust_df_frames(totalframes: int, fps: float, df_input: bool=False) -> int:
-    """
-    Adjust frames for dropframe timecode.
-    if df_input is False, it subtracts the dropped frames from the totalframes.
-    If df_input is True, it adds the dropped frames back to the totalframes.
+    `input_df_aligned` = False assumes the input frames were derived from a DF timecode using
+    a NDF conversion and adjusts to the actual DF frame count.
     """
     _, multiplier = test_dropframe(fps)
 
-    if df_input:
+    if input_df_aligned:
         round_fps = round(fps)
         frames_in_droppedmin = (round_fps * 60) - multiplier
         prev_min = 0
@@ -95,9 +67,19 @@ def adjust_df_frames(totalframes: int, fps: float, df_input: bool=False) -> int:
 
     return totalframes
 
-def is_valid_df_frame(mins: int, secs: int, frames: int, fps: float, self_raise: bool=False) -> bool:
-    _, multiplier = test_dropframe(fps)
-    isvalid = not (frames < multiplier and secs == 0 and mins % 10 != 0)
-    if not isvalid and self_raise:
-        raise ValueError(f"Invalid frame number in DFTC: Mins={mins} Frame={frames}")
-    return isvalid
+def frames_to_tuple(totalframes: int, fps: float, valid_fps_only: bool=False) -> tuple[int, int, int, int]:
+    """
+    Convert frames to timecode tuple (hours, minutes, seconds, frames).
+    If valid_fps_only is True, it raises a ValueError if the fps is not supported.
+    If original frames were dropframe, frames are assumed to have already been adjusted.
+    """
+    if valid_fps_only:
+        test_support(fps)
+    fps = round(fps)
+    totalseconds = int(totalframes / fps)
+    tchours = int(totalseconds / 3600)
+    remaining_secs = totalseconds % 3600
+    tcmins = int(remaining_secs / 60)
+    tcsecs = int(remaining_secs % 60)
+    tcframes = totalframes%fps
+    return (tchours,tcmins,tcsecs,tcframes)
