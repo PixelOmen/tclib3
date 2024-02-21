@@ -1,1 +1,1 @@
-from .main import *
+from .tclib3 import *

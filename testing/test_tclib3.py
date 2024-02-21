@@ -8,15 +8,14 @@ if ROOT not in sys.path:
     sys.path.append(str(ROOT))
 
 import testdata
-import src as tclib3
-from src import helpers
+from src import tclib3
 
 
 class TestLib(unittest.TestCase):
     def test_adjust_df_frames(self):
         for _, frame in testdata.RANDOM_DF_TCS_2997:
-            adjusted_frame = helpers.adjust_df_frames(frame, 29.97, True)
-            original_frame = helpers.adjust_df_frames(adjusted_frame, 29.97, False)
+            adjusted_frame = tclib3.helpers.adjust_df_frames(frame, 29.97, True)
+            original_frame = tclib3.helpers.adjust_df_frames(adjusted_frame, 29.97, False)
             self.assertEqual(frame, original_frame)
 
     def test_frames_to_tc(self):

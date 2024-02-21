@@ -1,3 +1,7 @@
 .vscode
 __pycache__
 temp.py
+build
+*.egg-info
+.venv
+.pytest_cache

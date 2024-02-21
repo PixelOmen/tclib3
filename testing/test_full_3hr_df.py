@@ -7,8 +7,7 @@ ROOT = HERE.parent
 if ROOT not in sys.path:
     sys.path.append(str(ROOT))
 
-import src as tclib3
-
+from src import tclib3
 
 class Test3HourDF(unittest.TestCase):
     def test_df_every_tc_to_hr3(self):
