@@ -125,5 +125,13 @@ class TestLib(unittest.TestCase):
             converted_ms = tclib3.frames_to_ms(frames, 23.976)
             self.assertEqual(converted_ms, ms)
 
+    def test_duration(self):
+        for start, end, df_dur, ndf_dur in testdata.RANDOM_DUR_2997:
+            self.assertEqual(tclib3.duration(start, end, 29.97, True), df_dur)
+            self.assertEqual(tclib3.duration(start, end, 29.97, False), ndf_dur)
+
+        for start, end, dur in testdata.RANDOM_DUR_2398:
+            self.assertEqual(tclib3.duration(start, end, 23.976), dur)
+
 if __name__ == "__main__":
     unittest.main()
