@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tclib3"
-version = "1.0.0"
+version = "1.0.2"
 description = "A timecode utility library."
 authors = ["Emmanuel Acosta <pixelomen@gmail.com>"]
 license = "MIT"
